@@ -35,6 +35,7 @@ export type DiskletFile = {
   delete(): Promise<mixed>,
   getData(): Promise<Uint8Array>,
   getText(): Promise<string>,
+  getPath(): string,
   setData(data: Array<number> | Uint8Array): Promise<mixed>,
   setText(text: string): Promise<mixed>
 }
@@ -93,6 +94,21 @@ export type EdgePbkdf2 = {
   ) => Promise<Uint8Array>
 }
 
+export type EdgeEncryptedDisklet = {
+  getData: (
+    path: string,
+    fallback: string | null,
+    whiteout: string | null,
+    key: Uint8Array
+  ) => Promise<Uint8Array>,
+  getText: (
+    path: string,
+    fallback: string | null,
+    whiteout: string | null,
+    key: Uint8Array
+  ) => Promise<string>
+}
+
 /**
  * Access to platform-specific resources.
  * The core never talks to the outside world on its own,
@@ -105,10 +121,12 @@ export type EdgeIo = {
   // TODO: Make these two non-optional, providing JS versions as needed:
   +secp256k1?: EdgeSecp256k1,
   +pbkdf2?: EdgePbkdf2,
+  +encryptedDisklet?: EdgeEncryptedDisklet,
 
   // Local io:
   +console: EdgeConsole,
   +folder: DiskletFolder,
+  +makeRepoFolder?: (dataKey: Uint8Array) => DiskletFolder,
 
   // Networking:
   +fetch: typeof fetch,

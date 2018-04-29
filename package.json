@@ -32,7 +32,7 @@
   "module": "lib/edge-core-index.es.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Airbitz/airbitz-core-js.git"
+    "url": "git@github.com:Airbitz/edge-core-js.git"
   },
   "scripts": {
     "build": "rimraf lib && webpack && rollup -c",

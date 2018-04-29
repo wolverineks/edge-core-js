@@ -20,6 +20,29 @@ class RepoFile {
     this.io = io
     this.dataKey = dataKey
     this.file = file
+
+    const encryptedDisklet = this.io.encryptedDisklet
+
+    if (this.file.getPath && encryptedDisklet) {
+      // $FlowFixMe
+      this.getData = () => {
+        return encryptedDisklet.getData(
+          this.file.getPath(),
+          null,
+          null,
+          this.dataKey
+        )
+      }
+      // $FlowFixMe
+      this.getText = () => {
+        return encryptedDisklet.getText(
+          this.file.getPath(),
+          null,
+          null,
+          this.dataKey
+        )
+      }
+    }
   }
 
   delete () {
@@ -46,6 +69,10 @@ class RepoFile {
 
   setText (text: string): Promise<mixed> {
     return this.setData(utf8.parse(text))
+  }
+
+  getPath (): string {
+    return this.file.getPath()
   }
 }
 

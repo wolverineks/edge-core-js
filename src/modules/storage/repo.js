@@ -1,6 +1,6 @@
 // @flow
 
-import { locateFile, makeUnionFolder, mapAllFiles } from 'disklet'
+import { locateFile, mapAllFiles } from 'disklet'
 
 import type {
   DiskletFolder,
@@ -9,7 +9,7 @@ import type {
 } from '../../edge-core-index.js'
 import { sha256 } from '../../util/crypto/crypto.js'
 import { base16, base58, base64 } from '../../util/encoding.js'
-import { RepoFolder } from './repoFolder.js'
+import { makeRepoUnionFolder } from './repoUnionFolder.js'
 import type {
   StorageWalletPaths,
   StorageWalletStatus
@@ -31,14 +31,14 @@ export function makeRepoPaths (
     .folder(base58.stringify(sha256(sha256(syncKey))))
   const changesFolder = base.folder('changes')
   const dataFolder = base.folder('data')
-  const unionFolder = makeUnionFolder(changesFolder, dataFolder)
+  const folder = makeRepoUnionFolder(io, dataKey, changesFolder, dataFolder)
 
   return {
     dataKey,
     syncKey,
     changesFolder,
     dataFolder,
-    folder: new RepoFolder(io, dataKey, unionFolder),
+    folder,
     statusFile: base.file('status.json')
   }
 }
