@@ -9,6 +9,7 @@ import { HmacDRBG, hashjs } from '../../util/crypto/external.js'
 import {
   Socket,
   TLSSocket,
+  encryptedDisklet,
   pbkdf2,
   randomBytes,
   scrypt,
@@ -73,6 +74,7 @@ export function makeReactNativeIo (): Promise<EdgeRawIo> {
       TLSSocket,
       pbkdf2,
       scrypt,
+      encryptedDisklet,
       secp256k1
     }
     return io

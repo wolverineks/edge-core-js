@@ -31,7 +31,7 @@
   "module": "lib/edge-core-index.es.js",
   "repository": {
     "type": "git",
-    "url": "git@github.com:Airbitz/airbitz-core-js.git"
+    "url": "git@github.com:Airbitz/edge-core-js.git"
   },
   "scripts": {
     "build": "webpack && rollup -c && flow-copy-source -i '**/*.test.js' src lib",

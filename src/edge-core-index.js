@@ -85,6 +85,11 @@ export type EdgePbkdf2 = {
   ) => Promise<Uint8Array>
 }
 
+export type EdgeEncryptedDisklet = {
+  getData: (path: string, key: Uint8Array) => Promise<Uint8Array>,
+  getText: (path: string, key: Uint8Array) => Promise<string>
+}
+
 /**
  * Access to platform-specific resources, with many optional fields.
  * The core will emulate/adapt whatever is missing.
@@ -99,6 +104,7 @@ export type EdgeRawIo = {
   // Local io:
   +console?: EdgeConsole,
   +folder?: DiskletFolder,
+  +encryptedDisklet?: EdgeEncryptedDisklet,
   +localStorage?: Storage,
 
   // Networking:
@@ -124,6 +130,7 @@ export type EdgeIo = {
   // Local io:
   +console: EdgeConsole,
   +folder: DiskletFolder,
+  +makeRepoFolder?: (dataKey: Uint8Array) => DiskletFolder,
 
   // Networking:
   +fetch: typeof fetch,

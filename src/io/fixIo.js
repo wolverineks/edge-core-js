@@ -38,6 +38,10 @@ export function fixIo (io: EdgeRawIo): EdgeIo {
     out.pbkdf2 = io.pbkdf2
   }
 
+  if (io.encryptedDisklet) {
+    out.encryptedDisklet = io.encryptedDisklet
+  }
+
   // Verify that we have what we need:
   for (const key of keys) {
     if (out[key] == null) {

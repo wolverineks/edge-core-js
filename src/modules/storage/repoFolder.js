@@ -9,6 +9,25 @@ class RepoFile {
     this.io = io
     this.dataKey = dataKey
     this.file = file
+
+    if (this.file.getPath && this.io.encryptedDisklet) {
+      this.getData = () => {
+        return this.io.encryptedDisklet.getData(
+          this.file.getPath(),
+          null,
+          null,
+          this.dataKey
+        )
+      }
+      this.getText = () => {
+        return this.io.encryptedDisklet.getText(
+          this.file.getPath(),
+          null,
+          null,
+          this.dataKey
+        )
+      }
+    }
   }
 
   delete () {
