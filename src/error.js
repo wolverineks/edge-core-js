@@ -19,8 +19,10 @@ export const errorNames = {
   ObsoleteApiError: 'ObsoleteApiError',
   OtpError: 'OtpError',
   PasswordError: 'PasswordError',
+  PendingFundsError: 'PendingFundsError',
+  SameCurrencyError: 'SameCurrencyError',
   UsernameError: 'UsernameError',
-  SameCurrencyError: 'SameCurrencyError'
+  NoAmountSpecifiedError: 'NoAmountSpecifiedError'
 }
 
 /**
@@ -38,6 +40,18 @@ export function DustSpendError (message = 'Please send a larger amount') {
 export function InsufficientFundsError (message = 'Insufficient funds') {
   const e = new Error(message)
   e.name = errorNames.InsufficientFundsError
+  return e
+}
+
+/**
+ * Attempting to create a MakeSpend without specifying an amount of currency to send
+ */
+
+export function NoAmountSpecifiedError (
+  message = 'Unable to create zero-amount transaction.'
+) {
+  const e = new Error(message)
+  e.name = errorNames.NoAmountSpecifiedError
   return e
 }
 
@@ -101,16 +115,11 @@ export function PasswordError (resultsJson = {}, message = 'Invalid password') {
 }
 
 /**
- * Cannot find a login with that id.
- *
- * Reasons could include:
- * - Password login: wrong username
- * - PIN login: wrong PIN key
- * - Recovery login: wrong username, or wrong recovery key
+ * Trying to spend funds that are not yet confirmed.
  */
-export function UsernameError (message = 'Invalid username') {
+export function PendingFundsError (message = 'Not enough confirmed funds') {
   const e = new Error(message)
-  e.name = e.type = errorNames.UsernameError
+  e.name = errorNames.PendingFundsError
   return e
 }
 
@@ -122,5 +131,19 @@ export function SameCurrencyError (
 ) {
   const e = new Error(message)
   e.name = errorNames.SameCurrencyError
+  return e
+}
+
+/**
+ * Cannot find a login with that id.
+ *
+ * Reasons could include:
+ * - Password login: wrong username
+ * - PIN login: wrong PIN key
+ * - Recovery login: wrong username, or wrong recovery key
+ */
+export function UsernameError (message = 'Invalid username') {
+  const e = new Error(message)
+  e.name = e.type = errorNames.UsernameError
   return e
 }

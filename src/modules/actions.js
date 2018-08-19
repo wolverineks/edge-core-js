@@ -4,8 +4,18 @@ import type {
   EdgeAccountCallbacks,
   EdgeCurrencyInfo,
   EdgeTokenInfo,
-  EdgeWalletInfo
+  EdgeWalletInfoFull
 } from '../edge-core-index.js'
+import type { PluginSettings } from './currency/currency-reducer.js'
+import type {
+  TxFileJsons,
+  TxFileNames
+} from './currency/wallet/currency-wallet-reducer.js'
+import type { ExchangePair } from './exchange/exchange-reducer.js'
+import type {
+  StorageWalletState,
+  StorageWalletStatus
+} from './storage/storage-reducer.js'
 
 /**
  * The account fires this when it loads its keys from disk.
@@ -14,7 +24,7 @@ export interface AccountKeysLoadedAction {
   type: 'ACCOUNT_KEYS_LOADED';
   payload: {
     activeLoginId: string,
-    walletInfos: Array<EdgeWalletInfo>
+    walletInfos: Array<EdgeWalletInfoFull>
   };
 }
 
@@ -24,6 +34,52 @@ export interface AccountKeysLoadedAction {
 export interface AddedCustomToken {
   type: 'ADDED_CUSTOM_TOKEN';
   payload: EdgeTokenInfo;
+}
+
+/**
+ * Fired when somebody changes the currency settings for a plugin.
+ */
+export type ChangedCurrencyPluginSettingAction = {
+  type: 'CHANGED_CURRENCY_PLUGIN_SETTING',
+  payload: {
+    pluginName: string,
+    settings: Object
+  }
+}
+
+/**
+ * Called when a currency engine fires the onBalanceChanged callback.
+ */
+export interface CurrencyEngineChangedBalance {
+  type: 'CURRENCY_ENGINE_CHANGED_BALANCE';
+  payload: {
+    balance: string,
+    currencyCode: string,
+    walletId: string
+  };
+}
+
+/**
+ * Called when a currency engine fires the onBlockHeightChanged callback.
+ */
+export interface CurrencyEngineChangedHeight {
+  type: 'CURRENCY_ENGINE_CHANGED_HEIGHT';
+  payload: {
+    height: number,
+    walletId: string
+  };
+}
+
+/**
+ * Called when a currency engine fires the onTransactionsChanged callback.
+ */
+export interface CurrencyEngineChangedSeeds {
+  type: 'CURRENCY_ENGINE_CHANGED_SEEDS';
+  payload: {
+    displayPublicSeed: string | null,
+    displayPrivateSeed: string | null,
+    walletId: string
+  };
 }
 
 /**
@@ -92,10 +148,12 @@ export interface CurrencyWalletFiatChanged {
 export interface CurrencyWalletFileChanged {
   type: 'CURRENCY_WALLET_FILE_CHANGED';
   payload: {
-    json: any,
+    creationDate: number,
+    fileName: string,
+    json: Object,
     txid: string,
-    walletId: string,
-    txFileName: any
+    txidHash: string,
+    walletId: string
   };
 }
 
@@ -105,7 +163,7 @@ export interface CurrencyWalletFileChanged {
 export interface CurrencyWalletFilesLoaded {
   type: 'CURRENCY_WALLET_FILES_LOADED';
   payload: {
-    files: any,
+    files: TxFileJsons,
     walletId: string
   };
 }
@@ -116,7 +174,7 @@ export interface CurrencyWalletFilesLoaded {
 export interface CurrencyWalletFileNamesLoaded {
   type: 'CURRENCY_WALLET_FILE_NAMES_LOADED';
   payload: {
-    txFileNames: any,
+    txFileNames: TxFileNames,
     walletId: string
   };
 }
@@ -130,6 +188,14 @@ export interface CurrencyWalletNameChanged {
     name: string | null,
     walletId: string
   };
+}
+
+/**
+ * Fired when we fetch exchange pairs from some server.
+ */
+export interface ExchangePairsFetched {
+  type: 'EXCHANGE_PAIRS_FETCHED';
+  payload: Array<ExchangePair>;
 }
 
 /**
@@ -166,22 +232,43 @@ export interface LogoutAction {
 }
 
 /**
+ * Fires when we load plugin settings from disk.
+ */
+export type NewCurrencyPluginSettingsAction = {
+  type: 'NEW_CURRENCY_PLUGIN_SETTINGS',
+  payload: PluginSettings
+}
+
+/**
+ * Fires when a storage wallet has been loaded.
+ */
+export interface StorageWalletAdded {
+  type: 'STORAGE_WALLET_ADDED';
+  payload: {
+    id: string,
+    initialState: StorageWalletState
+  };
+}
+
+/**
  * Fires when a repo has been synced.
  */
-export interface RepoSynced {
-  type: 'REPO_SYNCED';
+export interface StorageWalletSynced {
+  type: 'STORAGE_WALLET_SYNCED';
   payload: {
+    id: string,
     changes: Array<string>,
-    status: {
-      lastHash: string,
-      lastSync: number
-    }
+    status: StorageWalletStatus
   };
 }
 
 export type RootAction =
   | AccountKeysLoadedAction
   | AddedCustomToken
+  | ChangedCurrencyPluginSettingAction
+  | CurrencyEngineChangedBalance
+  | CurrencyEngineChangedHeight
+  | CurrencyEngineChangedSeeds
   | CurrencyEngineChangedTxs
   | CurrencyEngineCleared
   | CurrencyEngineFailed
@@ -189,10 +276,13 @@ export type RootAction =
   | CurrencyPluginsLoaded
   | CurrencyWalletFiatChanged
   | CurrencyWalletFileChanged
-  | CurrencyWalletFilesLoaded
   | CurrencyWalletFileNamesLoaded
+  | CurrencyWalletFilesLoaded
   | CurrencyWalletNameChanged
+  | ExchangePairsFetched
   | InitAction
   | LoginAction
   | LogoutAction
-  | RepoSynced
+  | NewCurrencyPluginSettingsAction
+  | StorageWalletAdded
+  | StorageWalletSynced

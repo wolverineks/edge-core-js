@@ -11,8 +11,7 @@ import type {
 } from '../../edge-core-index.js'
 import { wrapObject } from '../../util/api.js'
 import { base58 } from '../../util/encoding.js'
-import { makeAccount } from '../account/accountApi.js'
-import { waitForCurrencyPlugins } from '../currency/currency-selectors.js'
+import { makeAccount } from '../account/account-api.js'
 import { makeShapeshiftApi } from '../exchange/shapeshift.js'
 import { createLogin, usernameAvailable } from '../login/create.js'
 import { requestEdgeLogin } from '../login/edge.js'
@@ -27,6 +26,7 @@ import {
   loginRecovery2
 } from '../login/recovery2.js'
 import type { ApiInput } from '../root.js'
+import { EdgeInternalStuff } from './internal-api.js'
 
 export const contextApiPixie = (ai: ApiInput) => () => {
   ai.onOutput(makeContextApi(ai))
@@ -36,15 +36,15 @@ export const contextApiPixie = (ai: ApiInput) => () => {
 function makeContextApi (ai: ApiInput) {
   const appId = ai.props.state.login.appId
   const { loginStore } = ai.props
+  const internalApi = new EdgeInternalStuff(ai)
 
   const shapeshiftApi = makeShapeshiftApi(ai)
 
   const rawContext: EdgeContext = {
-    io: (ai.props.io: any),
     appId,
 
-    getCurrencyPlugins () {
-      return waitForCurrencyPlugins(ai)
+    get _internalEdgeStuff () {
+      return internalApi
     },
 
     '@fixUsername': { sync: true },
@@ -56,7 +56,7 @@ function makeContextApi (ai: ApiInput) {
       return loginStore.listUsernames()
     },
 
-    deleteLocalAccount (username: string): Promise<void> {
+    deleteLocalAccount (username: string): Promise<mixed> {
       return loginStore.remove(username)
     },
 
@@ -101,7 +101,7 @@ function makeContextApi (ai: ApiInput) {
       username: string,
       password: string,
       opts?: EdgeAccountOptions
-    ): Promise<any> {
+    ) {
       const { callbacks, otp } = opts || {} // opts can be `null`
 
       return loginPassword(ai, username, password, otp).then(loginTree => {
@@ -183,7 +183,7 @@ function makeContextApi (ai: ApiInput) {
         displayName,
         onProcessLogin,
         onLogin (err, loginTree) {
-          if (err) return onLogin(err)
+          if (err || !loginTree) return onLogin(err)
           makeAccount(ai, appId, loginTree, 'edgeLogin', callbacks).then(
             account => onLogin(void 0, account),
             err => onLogin(err)
@@ -221,11 +221,6 @@ function makeContextApi (ai: ApiInput) {
 
   // Wrap the context with logging:
   const out = wrapObject('Context', rawContext)
-  out.usernameList = out.listUsernames
-  out.removeUsername = out.deleteLocalAccount
-
-  // Used for the edge-login unit tests:
-  out.internalUnitTestingHack = () => ai
 
   return out
 }

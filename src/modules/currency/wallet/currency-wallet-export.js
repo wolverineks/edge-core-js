@@ -13,9 +13,9 @@ function padZero (val: string) {
 }
 
 function escapeOFXString (str: string) {
-  str = str.replace('&', '&amp;')
-  str = str.replace('>', '&gt;')
-  return str.replace('<', '&lt;')
+  str = str.replace(/&/g, '&amp;')
+  str = str.replace(/>/g, '&gt;')
+  return str.replace(/</g, '&lt;')
 }
 
 function exportOfxHeader (inputObj: Object) {
@@ -97,7 +97,7 @@ export function exportTransactionsToQBOInner (
   edgeTransactions: Array<EdgeTransaction>,
   currencyCode: string,
   fiatCurrencyCode: string,
-  denom: number | null,
+  denom: string | null,
   dateNow: number
 ): string {
   const STMTTRN = []
@@ -105,7 +105,7 @@ export function exportTransactionsToQBOInner (
 
   for (const edgeTx: EdgeTransaction of edgeTransactions) {
     const TRNAMT: string = denom
-      ? div(edgeTx.nativeAmount, denom.toString(), 18)
+      ? div(edgeTx.nativeAmount, denom, 18)
       : edgeTx.nativeAmount
     const TRNTYPE = lt(edgeTx.nativeAmount, '0') ? 'DEBIT' : 'CREDIT'
     const DTPOSTED = makeOfxDate(edgeTx.date)
@@ -122,21 +122,35 @@ export function exportTransactionsToQBOInner (
     const absFiat = abs(amountFiat.toString())
     const absAmount = abs(TRNAMT)
     const CURRATE = absAmount !== '0' ? div(absFiat, absAmount, 8) : '0'
-    const MEMO = `// Rate=${CURRATE} ${fiatCurrencyCode}=${amountFiat} category="${category}" memo="${notes}"`
-
-    const qboTx = {
+    let memo = `// Rate=${CURRATE} ${fiatCurrencyCode}=${amountFiat} category="${category}" memo="${notes}"`
+    if (memo.length > 250) {
+      memo = memo.substring(0, 250) + '...'
+    }
+    const qboTxNamed = {
       TRNTYPE,
       DTPOSTED,
       TRNAMT,
       FITID: edgeTx.txid,
       NAME,
-      MEMO,
+      MEMO: memo,
       CURRENCY: {
-        CURRATE: '',
+        CURRATE: CURRATE,
         CURSYM: fiatCurrencyCode
       }
     }
-    STMTTRN.push(qboTx)
+    const qboTx = {
+      TRNTYPE,
+      DTPOSTED,
+      TRNAMT,
+      FITID: edgeTx.txid,
+      MEMO: memo,
+      CURRENCY: {
+        CURRATE: CURRATE,
+        CURSYM: fiatCurrencyCode
+      }
+    }
+    const use = NAME === '' ? qboTx : qboTxNamed
+    STMTTRN.push(use)
   }
 
   const header = {
@@ -203,7 +217,7 @@ export async function exportTransactionsToCSVInner (
   edgeTransactions: Array<EdgeTransaction>,
   currencyCode: string,
   fiatCurrencyCode: string,
-  denom: number | null
+  denom: string | null
 ): Promise<string> {
   return new Promise((resolve, reject) => {
     const currencyField = 'AMT_' + currencyCode
@@ -212,10 +226,10 @@ export async function exportTransactionsToCSVInner (
 
     for (const edgeTx: EdgeTransaction of edgeTransactions) {
       const amount: string = denom
-        ? div(edgeTx.nativeAmount, denom.toString(), 18)
+        ? div(edgeTx.nativeAmount, denom, 18)
         : edgeTx.nativeAmount
       const networkFeeField: string = denom
-        ? div(edgeTx.networkFee, denom.toString(), 18)
+        ? div(edgeTx.networkFee, denom, 18)
         : edgeTx.networkFee
       const { date, time } = makeCsvDateTime(edgeTx.date)
       let name: string = ''

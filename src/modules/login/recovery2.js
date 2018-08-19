@@ -1,11 +1,11 @@
 // @flow
 
 import { decrypt, encrypt, hmacSha256 } from '../../util/crypto/crypto.js'
-import { totp } from '../../util/crypto/hotp.js'
+import { fixOtpKey, totp } from '../../util/crypto/hotp.js'
 import { base64, utf8 } from '../../util/encoding.js'
 import type { ApiInput } from '../root.js'
 import { authRequest } from './authServer.js'
-import type { LoginStash, LoginTree } from './login-types.js'
+import type { LoginKit, LoginStash, LoginTree } from './login-types.js'
 import { applyLoginReply, makeLoginTree } from './login.js'
 import { fixUsername } from './loginStore.js'
 
@@ -77,7 +77,7 @@ export async function loginRecovery2 (
     totp(otpKey || stashTree.otpKey)
   )
   stashTree = applyLoginReply(stashTree, loginKey, loginReply)
-  if (otpKey) stashTree.otpKey = otpKey
+  if (otpKey) stashTree.otpKey = fixOtpKey(otpKey)
   loginStore.save(stashTree)
   return makeLoginTree(stashTree, loginKey)
 }
@@ -119,7 +119,7 @@ export function makeRecovery2Kit (
   username: string,
   questions: Array<string>,
   answers: Array<string>
-) {
+): LoginKit {
   const { io } = ai.props
   if (!Array.isArray(questions)) {
     throw new TypeError('Questions must be an array of strings')

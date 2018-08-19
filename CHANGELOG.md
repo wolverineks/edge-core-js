@@ -1,5 +1,107 @@
 # edge-core-js
 
+## 0.10.0
+
+* Remove deprecated context properties & options
+* Remove `EdgeContext.io`
+* Remove `EdgeContext.getCurrencyPlugins`
+* Make many methods async:
+  * `EdgeCurrencyWallet.getNumTransactions`
+  * `EdgeAccount.listSplittableWalletTypes`
+  * `EdgeCurrencyWallet.dumpData`
+  * `EdgeCurrencyWallet.parseUri`
+  * `EdgeCurrencyWallet.encodeUri`
+* Add wallet properties for balances, block heights, and seeds
+
+## 0.9.15
+
+* Fix QBO & CSV export crash
+
+## 0.9.14
+
+* Another fix to QBO export 255-character limit (memo field)
+
+## 0.9.13
+
+* Pass options to `EdgeCurrencyPlugin.createPrivateKeys`.
+
+## 0.9.12
+
+* Fix QBO export error.
+* Fix minor Flow bug.
+
+## 0.9.11
+
+* Upgrade Flow.
+* Improve Flow types in currency wallet code.
+* Fix bug where Edge could not edit Airbitz metadata.
+* Add a basic `EdgeAccount.currencyTools` API.
+* Fix QBO export bug.
+* Fix more incorrect wallet key types.
+
+## 0.9.10
+
+* Add a `NoAmountSpecifiedError`.
+
+## 0.9.9
+
+* Fix a return value error in `listSplittableWalletTypes`.
+
+## 0.9.8
+
+* Fix Flow type bugs
+* Fix incorrect platform detection on Web.
+
+## 0.9.7
+
+* Fix payment request Flow types.
+* Implement plugin data API.
+
+## 0.9.5
+
+* Fix Edge login unhandled promise rejection error.
+* Fix the Flow type for the transaction export denomination.
+* Export the `Error` types directly.
+
+## 0.9.4
+
+* Fix Shapeshifting XMR and XRP.
+* Add `EdgeCurrencyInfo.requiredConfirmations` and associated `PendingFundsError` types.
+
+## 0.9.3
+
+* Move the unit tests out of the `src` directory.
+
+## 0.9.2
+
+* Replace flow-copy-source with rollup-plugin-flow-entry to fix a packaging bug.
+* Add `uniqueIdentifier` to `EdgeParsedUri`.
+
+## 0.9.1
+* Improve various flow typing issues, both inside and outside the core
+* Add `getTxids` & related callback to the CurrencyEngine.
+
+## 0.9.0-beta.1
+* Auto-correct mis-typed 2fa secrets
+* Expose hmacSha256 for the CLI
+* Fixed spelling mistake
+* Storage and Wallet flow coverage
+* Rename storage and exchange related files
+* Change createPrivateKey and derivePublicKey to Object instead of {}
+* Remove empty strings in the QBO export
+
+## 0.8.1
+
+* Flow type fix
+
+## 0.8.0
+
+* Add QBO & CSV export
+* Add private key sweeping
+* Add `EdgeCurrencyWallet.getNumTransactions`
+* Remove deprecated methods
+* Throttle wallet callbacks
+
 ## 0.7.2
 
 * Do not crash on really long passwords when running in the web.

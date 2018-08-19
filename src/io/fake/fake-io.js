@@ -2,13 +2,15 @@
 
 import { makeMemoryFolder } from 'disklet'
 
-import type { EdgeRawIo } from '../../edge-core-index.js'
+import type { EdgeIo } from '../../edge-core-index.js'
+import { scrypt } from '../../util/crypto/scrypt.js'
+import { FakeWebSocket } from './fake-socket.js'
 import { FakeServer } from './fakeServer.js'
 
 /**
  * Silences all logging.
  */
-const fakeConsole = {
+export const fakeConsole = {
   info: () => {},
   warn: () => {},
   error: () => {}
@@ -39,19 +41,26 @@ function makeFakeRandom () {
  * Each object has its own storage, but all contexts share a server.
  * @param {number} count number of io contexts to create
  */
-export function makeFakeIos (count: number): Array<EdgeRawIo> {
+export function makeFakeIos (count: number): Array<EdgeIo> {
   // The common server used by all contexts:
   const server = new FakeServer()
   const random = makeFakeRandom()
 
   // Make the io objects:
-  const out = []
+  const out: Array<EdgeIo> = []
   for (let i = 0; i < count; ++i) {
     out[i] = {
+      // Crypto:
+      random,
+      scrypt,
+
+      // Local io:
       console: fakeConsole,
-      fetch: server.fetch,
       folder: makeMemoryFolder(),
-      random
+
+      // Networking:
+      fetch: server.fetch,
+      WebSocket: FakeWebSocket
     }
   }
 

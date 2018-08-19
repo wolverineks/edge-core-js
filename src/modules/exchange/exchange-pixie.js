@@ -6,16 +6,16 @@ import type { PixieInput } from 'redux-pixies'
 import type { EdgeExchangePlugin } from '../../edge-core-index.js'
 import { rejectify } from '../../util/decorators.js'
 import type { RootProps } from '../root.js'
-import { addPairs } from './reducer.js'
+import type { ExchangePair } from './exchange-reducer.js'
 
 export interface ExchangeOutput {
   plugins: Array<EdgeExchangePlugin>;
-  update: void;
+  update: mixed;
 }
 
 export default combinePixies({
   plugins (input: PixieInput<RootProps>) {
-    return (props: RootProps): any => {
+    return (props: RootProps): mixed => {
       const opts = { io: (props.io: any) }
       const promises: Array<Promise<EdgeExchangePlugin>> = []
       for (const plugin of props.plugins) {
@@ -30,9 +30,9 @@ export default combinePixies({
   },
 
   update (input: PixieInput<RootProps>) {
-    let timeout: number | void
+    let timeout: * // Infer the proper timer type
 
-    function doFetch (): Promise<void> {
+    function doFetch (): Promise<mixed> {
       // Bail out if we have no plugins:
       if (!input.props.output.exchange.plugins) return Promise.resolve()
 
@@ -55,7 +55,7 @@ export default combinePixies({
         )
       ).then(pairLists => {
         const timestamp = Date.now() / 1000
-        const pairs = []
+        const pairs: Array<ExchangePair> = []
         for (let i = 0; i < plugins.length; ++i) {
           const source = plugins[i].exchangeInfo.exchangeName
           for (const pair of pairLists[i]) {
@@ -76,14 +76,14 @@ export default combinePixies({
           input.props.onError(e)
         }
 
-        input.props.dispatch(addPairs(pairs))
+        input.props.dispatch({ type: 'EXCHANGE_PAIRS_FETCHED', payload: pairs })
         timeout = setTimeout(doFetch, 30 * 1000)
         return void 0
       })
     }
 
     return {
-      update (props: RootProps): Promise<void> | void {
+      update (props: RootProps): Promise<mixed> | void {
         // Kick off the initial fetch if we don't already have one running:
         if (timeout == null) return doFetch()
       },

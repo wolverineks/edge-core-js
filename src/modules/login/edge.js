@@ -53,9 +53,15 @@ function onReply (ai: ApiInput, subscription, reply, appId, opts) {
     if (login == null) {
       throw new Error(`Cannot find requested appId: "${appId}"`)
     }
-    syncLogin(ai, loginTree, login).then(loginTree => {
-      opts.onLogin(void 0, loginTree)
-    })
+    syncLogin(ai, loginTree, login)
+      .then(loginTree => {
+        opts.onLogin(void 0, loginTree)
+      })
+      .catch(e => {
+        if (opts.onLogin != null) {
+          opts.onLogin(e)
+        }
+      })
   }
 }
 
@@ -74,8 +80,8 @@ export function requestEdgeLogin (
   opts: {
     displayImageUrl: ?string,
     displayName: ?string,
-    onProcessLogin?: (username: string) => void,
-    onLogin(e?: Error, account?: LoginTree): void
+    onProcessLogin?: (username: string) => mixed,
+    onLogin(e?: Error, loginTree?: LoginTree): mixed
   }
 ) {
   const request = {
